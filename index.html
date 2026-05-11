@@ -1139,37 +1139,43 @@ td.refund-val{color:var(--blue)!important}
   <!-- ── 2행: 연금·건강 변동 안내 (좌: 직장가입자 / 우: 지역가입자) 동시 표시 ── -->
   <div class="guide-panels guide-panels-ins">
     <div class="guide-panel ins-panel ins-emp">
-      <div class="gp-title"><i class="ti ti-building ti-purple"></i>직장가입자 — 연금·건강보험 변동</div>
-      <div class="ins-tag emp-tag">직원 있음 / 회사 4대보험 가입</div>
+      <div class="gp-title"><i class="ti ti-building ti-purple"></i>직장가입자인 사업주 — 연금·건강보험 변동</div>
+      <div class="ins-tag emp-tag">직원 1명 이상 고용 (본인 = 직장가입자)</div>
       <div class="guide-msg g-purple" id="ins-emp-msg"></div>
 
       <div class="ins-detail-grid">
         <div class="ins-d-item">
-          <div class="ins-d-h">① 보수월액보험료 <span class="ins-d-tag-info">급여분</span></div>
-          <div class="ins-d-c">회사 급여 기준 → 매월 원천공제 → <strong>다음해 4월 정산</strong> (연말정산 방식)<br>
-            <span class="ins-d-sub">※ 종합소득세 신고와 <u>무관</u> — 회사가 보수총액 신고</span></div>
+          <div class="ins-d-h">① 보수월액보험료 <span class="ins-d-tag-info">사업주 본인분</span></div>
+          <div class="ins-d-c">취득 시 기준소득 = <strong>직원 중 최고 급여 이상</strong>으로 등록<br>
+            매월 고지·납부 → <strong>다음해 5~6월 종소세 신고 후 연말정산</strong><br>
+            → 종소세 소득금액 기준 갱신 (정산금액 발생 가능)<br>
+            <span class="ins-d-sub">※ 일반 직장인의 "다음해 4월 정산"과 시점 다름 — 사업주는 종소세 신고 기반</span></div>
         </div>
         <div class="ins-d-item ins-d-warn">
           <div class="ins-d-h">② 소득월액보험료 <span class="ins-d-tag">중요</span></div>
-          <div class="ins-d-c">보수 외 사업·임대소득 <strong>연 2,000만원 초과</strong> 시 부과<br>
-            <strong>흐름</strong>: 2026.05 종소세 신고 → 2026.10 국세청→공단 자료 송부 → <strong id="ins-emp-when">2026년 11월</strong> 고지분부터 변동<br>
-            <span class="ins-d-sub">※ 소득금액증명원 발급(6~7월)과 보험료 변동 시점(11월)은 <u>다름</u></span></div>
+          <div class="ins-d-c">보수 외 추가 소득 (임대·금융·기타) <strong>연 2,000만원 초과</strong> 시 부과<br>
+            <strong>흐름</strong>: 2026.05 종소세 신고 → 2026.10 자료 송부 → <strong id="ins-emp-when">2026년 11월</strong> 부과 시작<br>
+            <span class="ins-d-sub">※ 사업소득 이미 보수월액에 반영됨 — 임대·금융 등 별도 소득만 해당</span></div>
+        </div>
+        <div class="ins-d-item">
+          <div class="ins-d-h">③ 국민연금</div>
+          <div class="ins-d-c">취득 시 직원 최고급여 기준 → <strong>다음해 7월 갱신</strong> (전년 종소세 소득 반영, 정산 없음)<br>
+            <span class="ins-d-sub">상한 월 617,700원 (2025년 기준) · 다음해 6월까지 고지</span></div>
         </div>
       </div>
 
-      <div class="g-row"><i class="ti ti-arrow-up gw"></i><span>소득 증가 → <span id="ins-emp-yr">2026.11</span> ~ 소득월액보험료 추가 부과</span></div>
-      <div class="g-row"><i class="ti ti-arrow-down gc"></i><span>소득 감소 → 자동 반영 또는 사후정산으로 환급</span></div>
-      <div class="g-row"><i class="ti ti-info-circle gd"></i><span style="font-size:11px">국민연금: 동일 시점 재산정 (상한 월 617,700원)</span></div>
+      <div class="g-row"><i class="ti ti-arrow-up gw"></i><span>소득 증가 → <span id="ins-emp-yr">2026.11</span> 소득월액 + 다음해 정산 시 추가 부과</span></div>
+      <div class="g-row"><i class="ti ti-info-circle gd"></i><span style="font-size:11px">고용·산재보험은 사업주 본인 가입 의무 없음 (임의 가입 가능)</span></div>
     </div>
 
     <div class="guide-panel ins-panel ins-reg">
-      <div class="gp-title"><i class="ti ti-user ti-purple"></i>지역가입자 — 연금·건강보험 변동</div>
-      <div class="ins-tag reg-tag">개인사업자 / 프리랜서 / 무직</div>
+      <div class="gp-title"><i class="ti ti-user ti-purple"></i>지역가입자인 사업주 — 연금·건강보험 변동</div>
+      <div class="ins-tag reg-tag">직원 없음 / 1인 사업자·프리랜서</div>
       <div class="guide-msg g-purple" id="ins-reg-msg"></div>
 
       <div class="ins-detail-grid">
         <div class="ins-d-item">
-          <div class="ins-d-h">① 보험료 부과 흐름</div>
+          <div class="ins-d-h">① 건강보험 부과 흐름</div>
           <div class="ins-d-c">
             <strong>1단계</strong>: 2026.05 종합소득세 신고<br>
             <strong>2단계</strong>: <strong id="ins-reg-trans">2026.10</strong> 국세청 → 건강보험공단 자료 송부<br>
@@ -1179,13 +1185,18 @@ td.refund-val{color:var(--blue)!important}
         <div class="ins-d-item ins-d-warn">
           <div class="ins-d-h">② 사후정산제 <span class="ins-d-tag">중요</span></div>
           <div class="ins-d-c">소득 감소 조정신청 시 → 그 <strong>다음해 11월에 정산</strong> (실제 소득 기준 추가부과 또는 환급)<br>
-            <span class="ins-d-sub">※ 직장가입자 연말정산(4월) 개념을 지역가입자에게 적용</span></div>
+            <span class="ins-d-sub">※ 직장가입자 연말정산 개념을 지역가입자에게 확대 (2022.9 시행)</span></div>
+        </div>
+        <div class="ins-d-item">
+          <div class="ins-d-h">③ 국민연금</div>
+          <div class="ins-d-c">사업자등록 시 지역가입자 가입 → 종소세 신고 후 <strong>다음해 7월 기준소득 갱신</strong><br>
+            <span class="ins-d-sub">개업 초기 매출 없음 → 사실확인서 제출 시 납부유예 가능</span></div>
         </div>
       </div>
 
       <div class="g-row"><i class="ti ti-calculator gp-c"></i><span>보험료 = (소득점수 + 재산점수) × 점수당 금액 <span style="font-size:10.5px;color:var(--text3)">(2025년 208.4원)</span></span></div>
-      <div class="g-row"><i class="ti ti-home gp-c"></i><span>재산: 주택·토지·선박·항공기 (<strong>자동차 폐지</strong>)</span></div>
-      <div class="g-row"><i class="ti ti-info-circle gd"></i><span style="font-size:11px">국민연금: 동일 시점 재산정 / 정확한 변동액은 국민건강보험공단(1577-1000) 문의</span></div>
+      <div class="g-row"><i class="ti ti-home gp-c"></i><span>재산: 주택·토지·선박·항공기 (<strong>자동차 폐지</strong>, 기본공제 1억원)</span></div>
+      <div class="g-row"><i class="ti ti-info-circle gd"></i><span style="font-size:11px">국민연금·건강보험 전액 본인 부담 / 정확한 변동액은 국민건강보험공단(1577-1000) 문의</span></div>
     </div>
   </div>
 </div>
@@ -1750,13 +1761,14 @@ function updateInfoPanels(){
   const nextYr=filingYr2;       // 변동 적용 시작 연도
   const afterYr=filingYr2+1;    // 적용 종료 연도 (지역가입자 1년 주기)
 
-  /* 직장가입자 패널 */
+  /* 직장가입자(사업주) 패널 - 개인사업자 + 직원 1명 이상 */
   const empMsg=document.getElementById('ins-emp-msg');
   if(empMsg){
     empMsg.className='guide-msg g-purple';
-    empMsg.innerHTML='<strong>'+yr+'년 사업·임대소득 신고 ('+filingYr2+'.05) 후</strong><br>'
-      +'• <strong>보수월액보험료</strong>: 회사 급여 → 다음해 4월 정산<br>'
-      +'• <strong>소득월액보험료</strong>: 보수 외 소득 → <strong>'+nextYr+'년 11월</strong> 고지분부터 변동';
+    empMsg.innerHTML='<strong>'+yr+'년 종소세 신고 ('+filingYr2+'.05) 후</strong><br>'
+      +'• <strong>보수월액보험료</strong>: <strong>'+filingYr2+'.05~06 종소세 신고 후 정산</strong> (소득금액 기준)<br>'
+      +'• <strong>소득월액보험료</strong>: 보수 외 소득 → <strong>'+nextYr+'년 11월</strong>~ 고지 시작<br>'
+      +'• <strong>국민연금</strong>: <strong>'+filingYr2+'.07</strong> 기준소득 갱신 (다음해 6월까지 적용)';
   }
   const empWhen=document.getElementById('ins-emp-when');
   if(empWhen)empWhen.textContent=nextYr+'년 11월';

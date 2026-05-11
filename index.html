@@ -89,6 +89,12 @@ body{font-family:'Noto Sans KR',sans-serif;font-size:14px;background:var(--bg);c
 .divider{height:0.5px;background:var(--border);margin:8px 0}
 .hint{font-size:11px;color:var(--text3);font-weight:400}
 .hint-note{font-size:11px;color:var(--text3);line-height:1.5;margin-top:-4px;margin-bottom:8px;padding-left:2px}
+
+/* 공동사업 안내 박스 */
+.joint-hint{display:none;align-items:flex-start;gap:6px;font-size:11px;background:#e3f2fd;border:0.5px solid #90caf9;border-radius:var(--radius);padding:6px 10px;margin-bottom:8px;line-height:1.6;color:var(--text2)}
+.joint-hint i{font-size:13px;color:var(--blue);flex-shrink:0;margin-top:1px}
+.joint-hint.show{display:flex}
+.joint-badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:4px;background:var(--blue-bg);color:var(--blue);border:0.5px solid var(--blue-bdr);font-weight:500;margin-left:4px}
 .pending-note{display:none;align-items:center;gap:5px;font-size:11px;color:var(--warn);background:var(--warn-bg);border:0.5px solid var(--warn-bdr);border-radius:6px;padding:4px 8px;margin-bottom:8px}
 .apply-btn{width:100%;padding:8px;border:0.5px solid var(--blue);border-radius:var(--radius);font-size:13px;font-family:inherit;cursor:pointer;background:var(--blue-bg);color:var(--blue);font-weight:500;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s;margin-top:2px}
 .apply-btn:hover{background:var(--blue);color:#fff}
@@ -791,6 +797,8 @@ td.refund-val{color:var(--blue)!important}
   .disclaimer strong{color:#4a6a2a}
   .apply-btn,.pending-note{display:none!important}
   .photo-zone,.mode-pill{display:none!important}
+  #shareRatioField{display:none!important}
+  .joint-hint.show{display:flex!important;font-size:7.5pt;padding:4px 8px;margin-bottom:4px}
   .compare-2024{box-shadow:none;break-inside:avoid;margin-bottom:8px}
 }
 .print-hdr,.print-footer{display:none}.disclaimer{display:none}.ph-logo{display:none}
@@ -825,6 +833,8 @@ td.refund-val{color:var(--blue)!important}
       <option value="2024">2024년</option>
     </select>
   </div>
+  <div class="field"><label>사업 형태</label><select id="bizType" onchange="onBizTypeChange()"><option value="sole">단독사업자</option><option value="joint">공동사업자</option></select></div>
+  <div class="field" id="shareRatioField" style="display:none"><label>본인 손익분배비율 <span class="hint">(소득세법 §43②)</span></label><div style="display:flex;align-items:center;gap:4px"><input type="number" id="shareRatio" class="num-input" placeholder="50" min="1" max="99" value="50" oninput="calc()" style="width:70px;text-align:right"><span class="unit">%</span></div></div>
 </div>
 
 <div class="main-grid">
@@ -861,6 +871,7 @@ td.refund-val{color:var(--blue)!important}
     <div class="divider"></div>
     <div class="calc-row"><label>소득금액</label><span class="val green" id="d_income">0원</span></div>
     <div class="calc-row"><label class="sub">소득율</label><span class="val green" style="font-size:13px" id="d_ratio">0.0%</span></div>
+    <div class="joint-hint" id="joint-income-hint"><i class="ti ti-users"></i><span>공동사업장 소득금액(100%) <b id="d_income_full">0원</b> × <b id="d_share_pct">50</b>% = 본인 몫 <b id="d_income_mine">0원</b></span></div>
   </div>
 
   <div class="section adj-sec">
@@ -873,6 +884,7 @@ td.refund-val{color:var(--blue)!important}
     <div class="divider"></div>
     <div class="calc-row"><label>조정 후 소득금액 <span class="hint">(미리보기)</span></label><span class="val blue" id="d_adjIncome">0원</span></div>
     <div class="calc-row"><label class="sub">조정 후 소득율</label><span class="val blue" style="font-size:13px" id="d_adjRatio">0.0%</span></div>
+    <div class="joint-hint" id="joint-adj-hint"><i class="ti ti-users"></i><span>무증빙 경비도 본인 몫(<b id="d_adj_share_pct">50</b>%) 환산 적용 → 조정 후 본인 몫 소득금액 <b id="d_adjIncome_mine">0원</b></span></div>
   </div>
 
   <div class="section">
@@ -946,6 +958,7 @@ td.refund-val{color:var(--blue)!important}
   <!-- 결과표 -->
   <div class="section result-s">
     <div class="sec-title"><i class="ti ti-scale"></i>예상 세액 비교 <span class="hint" id="result-unit-hint">(단위: 원)</span>
+      <span id="joint-result-badge" class="joint-badge" style="display:none">공동사업 <span id="joint-result-pct">50</span>% 본인 몫</span>
       <span class="hint" style="float:right;font-weight:400">위하고 종합소득세신고서 순서</span>
     </div>
     <table class="rtable rtable-2col">
@@ -1337,6 +1350,7 @@ td.refund-val{color:var(--blue)!important}
 <script>
 /* ══ 상태 ══ */
 let appliedAdj=0,adjApplied=false;
+let lastShareRatio=1;
 let lastIncome=0,lastAdjIncome=0,lastRev=0,lastTot=0,lastTotAdj=0,lastDiff=0;
 let lastFinal=0,lastFinalAdj=0,lastDiffForPrint=0;
 let selectedLoanPeriod=1,selectedInsType=1;
@@ -1487,10 +1501,13 @@ function computeOne(income,adj,pen,yw_input,othD,smeR,psLimit,std,empC,othC){
 function onAdjInput(){
   const changed=(n('adj')!==appliedAdj);
   document.getElementById('adjPending').style.display=changed?'flex':'none';
-  const rev=n('rev'),income=Math.max(0,rev-n('cogs')-n('sga')+n('nonOpInc')-n('nonOpExp'));
-  const preview=Math.max(0,income-n('adj'));
+  const isJointOA=document.getElementById('bizType').value==='joint';
+  const srOA=isJointOA?Math.max(1,Math.min(99,parseFloat(document.getElementById('shareRatio').value)||50))/100:1;
+  const rev=n('rev'),incomeFull=Math.max(0,rev-n('cogs')-n('sga')+n('nonOpInc')-n('nonOpExp'));
+  const income=Math.max(0,Math.round(incomeFull*srOA));
+  const preview=Math.max(0,income-Math.round(n('adj')*srOA));
   setDisp('d_adjIncome',preview);
-  document.getElementById('d_adjRatio').textContent=pct(preview,rev);
+  document.getElementById('d_adjRatio').textContent=pct(preview,rev*srOA);
 }
 function applyAdj(){
   appliedAdj=n('adj');adjApplied=true;
@@ -1501,19 +1518,52 @@ function applyAdj(){
   calc();
 }
 
+/* ══ 공동사업 형태 변경 (소득세법 §43③) ══ */
+function onBizTypeChange(){
+  const isJoint=document.getElementById('bizType').value==='joint';
+  document.getElementById('shareRatioField').style.display=isJoint?'':'none';
+  calc();
+}
+
 /* ══ 메인 계산 ══ */
 function calc(){
   const rev=n('rev'),cogs=n('cogs'),sga=n('sga');
   const nonOpInc=n('nonOpInc'),nonOpExp=n('nonOpExp');
   /* 소득금액 = 매출-매출원가-판관비+영업외수익-영업외비용 */
-  const income=Math.max(0,rev-cogs-sga+nonOpInc-nonOpExp);
-  lastIncome=income;lastRev=rev;
+  /* 공동사업 지분율 적용 (소득세법 §43③) */
+  const isJoint=document.getElementById('bizType').value==='joint';
+  const shareRatioPct=isJoint?Math.max(1,Math.min(99,parseFloat(document.getElementById('shareRatio').value)||50)):100;
+  const shareRatio=shareRatioPct/100;
+  lastShareRatio=shareRatio;
 
-  const preview=Math.max(0,income-n('adj'));
+  const incomeFull=Math.max(0,rev-cogs-sga+nonOpInc-nonOpExp);
+  const income=Math.max(0,Math.round(incomeFull*shareRatio));
+  lastIncome=income;lastRev=rev*shareRatio;
+
+  const preview=Math.max(0,income-Math.round(n('adj')*shareRatio));
   setDisp('d_income',income);
-  document.getElementById('d_ratio').textContent=pct(income,rev);
+  document.getElementById('d_ratio').textContent=pct(income,rev*shareRatio);
   setDisp('d_adjIncome',preview);
-  document.getElementById('d_adjRatio').textContent=pct(preview,rev);
+  document.getElementById('d_adjRatio').textContent=pct(preview,rev*shareRatio);
+
+  /* 공동사업 안내 박스 갱신 */
+  const jIH=document.getElementById('joint-income-hint');
+  const jAH=document.getElementById('joint-adj-hint');
+  const jBadge=document.getElementById('joint-result-badge');
+  if(isJoint){
+    jIH.classList.add('show');jAH.classList.add('show');
+    if(jBadge)jBadge.style.display='';
+    document.getElementById('d_income_full').textContent=incomeFull.toLocaleString()+'원';
+    document.getElementById('d_income_mine').textContent=income.toLocaleString()+'원';
+    document.getElementById('d_share_pct').textContent=shareRatioPct;
+    document.getElementById('d_adj_share_pct').textContent=shareRatioPct;
+    const adjMinePreview=Math.round(n('adj')*shareRatio);
+    document.getElementById('d_adjIncome_mine').textContent=Math.max(0,income-adjMinePreview).toLocaleString()+'원';
+    if(document.getElementById('joint-result-pct'))document.getElementById('joint-result-pct').textContent=shareRatioPct;
+  }else{
+    jIH.classList.remove('show');jAH.classList.remove('show');
+    if(jBadge)jBadge.style.display='none';
+  }
 
   const ylmt=yellowLmt(income);
   const YLBL={5000000:'500만원',3000000:'300만원',2000000:'200만원'};
@@ -1582,7 +1632,7 @@ function calc(){
   const t5El=document.getElementById('r_total5');
   if(total5May<0){t5El.style.color='var(--blue)';}else{t5El.style.color='';}
   setDisp('d_prepaid',prepaid);
-  document.getElementById('r_rat').textContent=pct(income,rev);
+  document.getElementById('r_rat').textContent=pct(income,rev*shareRatio);
   /* 실효세율 = (결정세액 + 농특세 + 지방세) ÷ 소득금액 — 기납부 차감 전 전체 세부담률 (B.tot) */
   document.getElementById('r_eff').textContent=income>0?(B.tot/income*100).toFixed(1)+'%':'0.0%';
 
@@ -1600,7 +1650,7 @@ function calc(){
   }
 
   /* 소득율 카드 (2025 기본) */
-  document.getElementById('rs_baseR').textContent=pct(income,rev);
+  document.getElementById('rs_baseR').textContent=pct(income,rev*shareRatio);
   document.getElementById('rs_baseA').textContent=income>0?'소득 '+income.toLocaleString()+'원':'소득금액 —';
   document.getElementById('rs_baseTx').textContent='5월 납부 '+fmtW(total5May);
   document.getElementById('rs_baseTx').dataset.man='5월 납부 '+fmtM(total5May);
@@ -1627,7 +1677,7 @@ function calc(){
 
   /* ═══ 조정 후 계산 ═══ */
   if(adjApplied){
-    const adjIncome=Math.max(0,income-appliedAdj);lastAdjIncome=adjIncome;
+    const adjMine=Math.round(appliedAdj*lastShareRatio);const adjIncome=Math.max(0,income-adjMine);lastAdjIncome=adjIncome;
     const A=computeOne(adjIncome,0,pen,yw_input,othD,smeR,psLimit,std,empC,othC);
     lastTotAdj=A.tot;
     const adjFinalPayable=A.fin+A.ruralTax-prepaid;
@@ -1671,7 +1721,7 @@ function calc(){
     if(adjPayableNational<0){raPayableEl.style.color='var(--blue)';}else{raPayableEl.style.color='';}
     const ra5El=document.getElementById('ra_total5');
     if(adjTotal5May<0){ra5El.style.color='var(--blue)';}else{ra5El.style.color='';}
-    document.getElementById('ra_rat').textContent=pct(adjIncome,rev);
+    document.getElementById('ra_rat').textContent=pct(adjIncome,rev*shareRatio);
     document.getElementById('ra_eff').textContent=adjIncome>0?(A.tot/adjIncome*100).toFixed(1)+'%':'0.0%';
 
     /* 최저한세 조정 열 */
@@ -1689,7 +1739,7 @@ function calc(){
     dEl.style.color=diff>0?'var(--success)':diff<0?'var(--red)':'var(--text3)';
 
     /* 소득율 카드 (조정 후) */
-    document.getElementById('rs_adjR').textContent=pct(adjIncome,rev);
+    document.getElementById('rs_adjR').textContent=pct(adjIncome,rev*shareRatio);
     document.getElementById('rs_adjA').textContent='소득 '+adjIncome.toLocaleString()+'원';
     document.getElementById('rs_adjTx').textContent='5월 납부 '+fmtW(adjTotal5May);
     document.getElementById('rs_adjTx').dataset.man='5월 납부 '+fmtM(adjTotal5May);
@@ -1797,7 +1847,10 @@ function updatePH(){
   const yr=document.getElementById('yr').value;
   document.getElementById('ph_name').textContent=nm+(birth?' ('+birth+')':'');
   const now=new Date();
-  document.getElementById('ph_meta').innerHTML=yr+'년 귀속 종합소득세 가결산<br>'
+  const isJointPH=document.getElementById('bizType').value==='joint';
+  const srPctPH=isJointPH?Math.max(1,Math.min(99,parseFloat(document.getElementById('shareRatio').value)||50)):null;
+  const jointLabel=isJointPH?' · 공동사업 '+srPctPH+'%':'';
+  document.getElementById('ph_meta').innerHTML=yr+'년 귀속 종합소득세 가결산'+jointLabel+'<br>'
     +now.getFullYear()+'.'+String(now.getMonth()+1).padStart(2,'0')+'.'+String(now.getDate()).padStart(2,'0')+' 작성';
   /* PDF 파일명 = 종합소득세{연도}_{대표자이름}_{생년월일} */
   const fname=buildFilename();
@@ -1851,6 +1904,7 @@ function resetAll(){
   ['rev','cogs','sga','nonOpInc','nonOpExp','adj','pension','yellow','otherD','empC','pensS','otherC','prepaid1','prepaid2','bizName','bizBirth']
     .forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('smeRate').value='';
+  document.getElementById('bizType').value='sole';document.getElementById('shareRatioField').style.display='none';document.getElementById('shareRatio').value='50';lastShareRatio=1;
   document.getElementById('stdC').checked=true;
   appliedAdj=0;adjApplied=false;lastIncome=0;lastAdjIncome=0;lastRev=0;lastTot=0;lastTotAdj=0;lastDiff=0;lastFinal=0;lastFinalAdj=0;
   ['ra_inc','ra_ded','ra_base','ra_tax','ra_sme','ra_credtot','ra_empc','ra_empc_req','ra_cred','ra_fin','ra_prepaid','ra_payable','ra_rural','ra_loc','ra_total5','ra_rat','ra_eff','ra_mintax','r_empc_req']

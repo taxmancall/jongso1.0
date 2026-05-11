@@ -626,7 +626,7 @@ td.refund-val{color:var(--blue)!important}
   /* ── 신고 안내문 ── */
   .notice-panels{
     display:grid!important;grid-template-columns:1fr 1fr;gap:9px;
-    margin-top:10px;page-break-before:always;
+    margin-top:10px;
   }
   .notice-panel{
     border:0.7px solid #d4dec5;border-top-width:3.5px;
@@ -1042,7 +1042,7 @@ td.refund-val{color:var(--blue)!important}
           <td id="r_rat">—</td>
           <td id="ra_rat" class="dim">—</td>
         </tr>
-        <tr><td>실효세율 <span class="label-note">(전체세부담÷소득)</span></td>
+        <tr><td>실효세율 <span class="label-note">(전체세부담÷소득, 기납부 포함)</span></td>
           <td id="r_eff">—</td>
           <td id="ra_eff" class="dim">—</td>
         </tr>
@@ -1434,7 +1434,8 @@ function computeOne(income,adj,pen,yw_input,othD,smeR,psLimit,std,empC,othC){
         (위 표준·연금·기타는 최저한세 무관하게 그대로 차감)  */
   const taxBaseBeforeChoTuk=taxBase+yw; // 노란우산공제를 더해 되돌림
   const rawTaxForMinTax=calcTax(taxBaseBeforeChoTuk);
-  // 산출세액 3천만 이하 35%, 초과분 45%
+  /* 조특법 §132②: 최저한세 = 산출세액 기준 구간별 적용 (위하고 기준)
+     산출세액 3천만↓ 35% / 3천만↑ 구간별 45% 누진 */
   const minTax = rawTaxForMinTax<=30000000
     ? rawTaxForMinTax*0.35
     : 30000000*0.35 + (rawTaxForMinTax-30000000)*0.45;
@@ -1582,8 +1583,8 @@ function calc(){
   if(total5May<0){t5El.style.color='var(--blue)';}else{t5El.style.color='';}
   setDisp('d_prepaid',prepaid);
   document.getElementById('r_rat').textContent=pct(income,rev);
-  /* 실효세율 = (납부할 국세 + 농특세 + 지방세) ÷ 소득금액 — 기납부 차감 후 부담률 */
-  document.getElementById('r_eff').textContent=income>0?(total5May/income*100).toFixed(1)+'%':'0.0%';
+  /* 실효세율 = (결정세액 + 농특세 + 지방세) ÷ 소득금액 — 기납부 차감 전 전체 세부담률 (B.tot) */
+  document.getElementById('r_eff').textContent=income>0?(B.tot/income*100).toFixed(1)+'%':'0.0%';
 
   /* 최저한세 행 표시 */
   const mtRow=document.getElementById('mintax-row');
@@ -1671,7 +1672,7 @@ function calc(){
     const ra5El=document.getElementById('ra_total5');
     if(adjTotal5May<0){ra5El.style.color='var(--blue)';}else{ra5El.style.color='';}
     document.getElementById('ra_rat').textContent=pct(adjIncome,rev);
-    document.getElementById('ra_eff').textContent=adjIncome>0?(adjTotal5May/adjIncome*100).toFixed(1)+'%':'0.0%';
+    document.getElementById('ra_eff').textContent=adjIncome>0?(A.tot/adjIncome*100).toFixed(1)+'%':'0.0%';
 
     /* 최저한세 조정 열 */
     if(A.isMinTax){
